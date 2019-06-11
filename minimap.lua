@@ -1,9 +1,9 @@
-local minimap_x = 100
-local minimap_y = 100
-local minimap_w = 100
-local minimap_h = 100
-local density_ui = 10
-local density = 60
+local minimap_x = 0
+local minimap_y = 0
+local minimap_w = 40
+local minimap_h = 40
+local density_ui = 20
+local distance = 10
 local height = 500
 
 
@@ -34,18 +34,44 @@ local matstruct = {
 	{MAT_WARPSHIELD , Color(0, 255, 255)}
 }
 
+
+local function rotatePoint(x1, y1, centerx, centery, angle)
+	angle = math.rad(angle)
+	local rotatedX = math.cos(angle) * (x1 - centerx) - math.sin(angle) * (y1 - centery) + centerx
+	local rotatedY = math.sin(angle) * (x1 - centerx) + math.cos(angle) * (y1 - centery) + centery
+
+	return rotatedX, rotatedY
+end
+
 hook.Add("HUDPaint", "minimap", function()
+
+
+
+
+
 	surface.SetDrawColor(0, 0, 0, 255)
 	surface.DrawRect(minimap_x - 1, minimap_y - 1, minimap_w * density_ui + 2, minimap_h * density_ui + 2)
 	local x = 0
-	local top_pos = LocalPlayer():GetPos() + Vector(-(minimap_w / 2 * density), -(minimap_h / 2 * density), height)
+	local top_pos = LocalPlayer():GetPos() + Vector(-(minimap_w / 2 * distance), -(minimap_h / 2 * distance), height)
+	local playerangle = LocalPlayer():EyeAngles().y + 90
 
+	--local playeranglerad = math.rad(playerangle)
 	while (x < minimap_w) do
 		local y = 0
 
 		while (y < minimap_h) do
+			local xpos = x * distance
+			local ypos = y * distance
+
+			local x2 , y2 = rotatePoint(xpos, ypos, minimap_w / 2 * distance , minimap_h / 2 * distance, playerangle)
+
+
 			local tr = util.TraceLine({
-				start = top_pos + Vector(x * density, y * density, 0),
+
+
+
+
+				start = top_pos + Vector(x2, y2, 0),
 				endpos = top_pos + Vector(0, 0, -10000000)
 			})
 
@@ -53,7 +79,7 @@ hook.Add("HUDPaint", "minimap", function()
 				local mat = tr.MatType
 				local col = color_white
 
-				for k, v in pairs(matstruct) do
+				for k, v in ipairs(matstruct) do
 					if v[1] == mat then
 						col = v[2]
 						break
